@@ -1,0 +1,10 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {duration,distance,validateData,type Entry} from '../src/lib/model.ts';
+const entry:Entry={id:'1',kind:'trip',employerId:'',start:'2026-11-12T22:00:00+01:00',end:'2026-11-13T06:00:00+01:00',pause:30,fromKm:100,toKm:145,note:'',planned:false};
+test('Směna přes půlnoc odečte přestávku',()=>assert.equal(duration(entry),450));
+test('Změna času respektuje skutečně uplynulý čas',()=>assert.equal(duration({...entry,start:'2026-10-25T01:00:00+02:00',end:'2026-10-25T04:00:00+01:00',pause:0}),240));
+test('Neplatná přestávka je odmítnuta',()=>assert.throws(()=>duration({...entry,pause:999})));
+test('Tachometr nemůže klesat',()=>assert.throws(()=>distance({...entry,toKm:90})));
+test('Kilometry jsou rozdílem stavů',()=>assert.equal(distance(entry),45));
+test('Import odmítá neplatné vazby',()=>assert.throws(()=>validateData({version:1,employers:[],entries:[{...entry,kind:'shift'}]})));
